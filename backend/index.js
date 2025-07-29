@@ -14,33 +14,31 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ Connected to MongoDB Atlas"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// CORS setup for your frontend URL
+// Middleware
+app.use(express.json());
 app.use(cors({
-  origin: [
-    "https://notesweb-frontend.onrender.com", // ✅ Frontend on Render
-    "http://localhost:5173",                  // ✅ Local testing
-  ],
+  origin: ["https://notesapp-19.onrender.com", "http://localhost:5173"],
   credentials: true,
 }));
 
-app.use(express.json());
-
-// Test route
+// Default Route
 app.get("/", (req, res) => {
-  res.json({ message: "Backend is running" });
+  res.json({ message: "API is running." });
 });
 
 // Register
 app.post("/create-account", async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
+
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -53,11 +51,9 @@ app.post("/create-account", async (req, res) => {
     const user = new User({ fullName, email, password });
     await user.save();
 
-    const accessToken = jwt.sign(
-      { id: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1d" }
-    );
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
 
     return res.status(200).json({
       accessToken,
@@ -72,24 +68,30 @@ app.post("/create-account", async (req, res) => {
 
 // Login
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ message: "All fields required" });
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user || user.password !== password) {
-    return res.status(400).json({ error: true, message: "Invalid credentials" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password) {
+      return res.status(400).json({ error: true, message: "Invalid credentials" });
+    }
+
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
+
+    return res.status(200).json({
+      error: false,
+      message: "Login successful",
+      accessToken,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: true, message: "Internal Server Error" });
   }
-
-  const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "1d",
-  });
-
-  return res.json({
-    error: false,
-    message: "Login successful",
-    accessToken,
-  });
 });
 
 // Get Authenticated User
@@ -121,7 +123,6 @@ app.post("/add-note", authenticateToken, async (req, res) => {
   try {
     const note = new Note({ title, content, tags, userId });
     await note.save();
-
     return res.json({ error: false, note, message: "Note added successfully" });
   } catch (error) {
     return res.status(500).json({ error: true, message: "Internal Server Error" });
@@ -211,5 +212,5 @@ app.get("/search-notes", authenticateToken, async (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at https://notesapp-20n3.onrender.com`);
 });
