@@ -1,17 +1,12 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx,css}",
+    "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
       colors: {
-        day: {
-          300: '#D1D5DB' // Example gray value, update as needed
-        },
-        primary: '#2563EB',
-        secondary: '#6B7280'
+        primary: "#1d4ed8", // optional if using custom color like bg-primary
       },
     },
   },
