@@ -8,7 +8,7 @@ const User = require("./models/user");
 const Note = require("./models/notes");
 const { authenticateToken } = require("./utilities");
 
-dotenv.config(); // Load .env file
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -21,31 +21,26 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log("✅ Connected to MongoDB Atlas"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Middleware
-app.use(express.json());
-//app.use(cors({ origin: "https://notesweb-frontend.onrender.com" }));
+// CORS setup for your frontend URL
 app.use(cors({
   origin: [
-    "https://notesweb-frontend.onrender.com",
-    "http://localhost:5173"
+    "https://notesweb-frontend.onrender.com", // ✅ Frontend on Render
+    "http://localhost:5173",                  // ✅ Local testing
   ],
-  credentials: true
+  credentials: true,
 }));
 
-// Routes
-app.get("/", (req, res) => {
-  res.json({ data: "hello" });
-});
+app.use(express.json());
 
-app.get("/api/notes", (req, res) => {
-  res.json([{id: 1, title:"First Note" ,content:"Hello from backend" },{id:2,title:"Second Note" ,content:"Another Note"}]);
+// Test route
+app.get("/", (req, res) => {
+  res.json({ message: "Backend is running" });
 });
 
 // Register
 app.post("/create-account", async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
-
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -56,7 +51,7 @@ app.post("/create-account", async (req, res) => {
     }
 
     const user = new User({ fullName, email, password });
-    await user.save(); // ✅ This was missing before!
+    await user.save();
 
     const accessToken = jwt.sign(
       { id: user._id },
@@ -78,8 +73,8 @@ app.post("/create-account", async (req, res) => {
 // Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) return res.status(400).json({ message: "All fields required" });
+  if (!email || !password)
+    return res.status(400).json({ message: "All fields required" });
 
   const user = await User.findOne({ email });
   if (!user || user.password !== password) {
