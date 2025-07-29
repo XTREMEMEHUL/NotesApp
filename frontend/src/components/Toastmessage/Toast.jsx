@@ -1,58 +1,46 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar/Navbar";
-import NoteCard from "../../components/cards/NoteCard";
-import { MdAdd } from "react-icons/md";
-import AddEditNotes from "../../pages/Home/AddEditNotes"; // ✅ Correct import path
-import Modal from "react-modal";
+import React, { useEffect } from "react";
+import { LuCheck } from "react-icons/lu";
+import { MdDeleteOutline } from "react-icons/md";
 
-// Fix: move setAppElement inside useEffect
-const Home = () => {
-  const [openAddEditModal, setOpenAddEditModel] = useState({
-    isShown: false,
-    type: "add",
-    data: null,
-  });
-
+const Toast = ({ isShown, message, type, onClose }) => {
   useEffect(() => {
-    Modal.setAppElement("#root");
-  }, []);
+    const timeoutId = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [onClose]);
 
   return (
-    <>
-      <button
-        //className="w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 absolute right-10 bottom-10"
-        onClick={() =>
-          setOpenAddEditModel({ isShown: true, type: "add", data: null })
-        }
+    <div
+      className={`fixed top-20 right-6 z-50 transition-all duration-500 ${
+        isShown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[-20px]"
+      }`}
+    >
+      <div
+        className={`relative min-w-52 bg-white border shadow-xl rounded-md flex after:w-[5px] after:h-full ${
+          type === "delete"
+            ? "after:bg-red-500"
+            : "after:bg-green-500"
+        } after:absolute after:left-0 after:top-0 after:rounded-l-lg`}
       >
-        <MdAdd className="text-[32px] text-white" />
-      </button>
-
-      <Modal
-        isOpen={openAddEditModal.isShown}
-        onRequestClose={() =>
-          setOpenAddEditModel({ isShown: false, type: "", data: null })
-        }
-        style={{
-          overlay: {
-            backgroundColor: "rgba(0,0,0,0.2)",
-          },
-        }}
-        contentLabel="Add/Edit Note Modal"
-        className="w-[40%] max-h-[75vh] bg-white rounded-md mx-auto mt-14 p-5 overflow-scroll"
-      >
-        <AddEditNotes
-          type={openAddEditModal.type}
-          noteData={openAddEditModal.data}
-          onClose={() =>
-            setOpenAddEditModel({ isShown: false, type: "add", data: null })
-          }
-          getAllNotes={() => {}}
-          showToastMsg={() => {}} // Fix: was an object before
-        />
-      </Modal>
-    </>
+        <div className="flex items-center gap-3 py-2 px-4">
+          <div
+            className={`w-10 h-10 flex items-center justify-center rounded-full ${
+              type === "delete" ? "bg-red-100" : "bg-green-100"
+            }`}
+          >
+            {type === "delete" ? (
+              <MdDeleteOutline className="text-xl text-red-500" />
+            ) : (
+              <LuCheck className="text-xl text-green-500" />
+            )}
+          </div>
+          <p className="text-sm text-slate-800">{message}</p>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default Home;  
+export default Toast;

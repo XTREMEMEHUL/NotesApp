@@ -108,7 +108,7 @@ const Home = () => {
         { isPinned: !noteData.isPinned }
       );
       if (response.data?.note) {
-        setShowToastMsg("Note Updated Successfully", "update");
+        setShowToastMsg("Note Pinned Successfully", "update");
         getAllNotes();
       }
     } catch (error) {

@@ -23,7 +23,14 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "https://notesweb-frontend.onrender.com" }));
+//app.use(cors({ origin: "https://notesweb-frontend.onrender.com" }));
+app.use(cors({
+  origin: [
+    "https://notesweb-frontend.onrender.com",
+    "http://localhost:5173"
+  ],
+  credentials: true
+}));
 
 // Routes
 app.get("/", (req, res) => {
@@ -188,7 +195,7 @@ app.put("/update-note-pinned/:noteId", authenticateToken, async (req, res) => {
 
 // Search Notes
 app.get("/search-notes", authenticateToken, async (req, res) => {
-  const query = req.query.q;
+  const query = req.query.query;
 
   if (!query) return res.status(400).json({ error: true, message: "Search query is required" });
 
